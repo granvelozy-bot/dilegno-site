@@ -3,6 +3,7 @@
 // ============================================================
 const CONFIG = {
   whatsappNumber: "526567871400", // MX WhatsApp, digits only, country code first
+  contactEmail: "granvelozy@gmail.com",
 };
 
 // ============================================================
@@ -40,7 +41,7 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 
 if (!prefersReducedMotion && "IntersectionObserver" in window) {
   const revealTargets = document.querySelectorAll(
-    ".gallery-item, .events-item, .process-list li, .thesis-quote, .engraving-media, .guarantee-seal"
+    ".gallery-item, .events-item, .process-list li, .engraving-media, .guarantee-seal, .section-head, .testimonial-card, .faq-item, .contact-copy, .contact-form"
   );
 
   revealTargets.forEach((el) => {
@@ -66,7 +67,51 @@ if (!prefersReducedMotion && "IntersectionObserver" in window) {
 }
 
 // ============================================================
-// Contact form -> WhatsApp handoff
+// Floating WhatsApp button (hidden while the hero is in view)
+// ============================================================
+const whatsappFloat = document.getElementById("whatsapp-float");
+const heroSection = document.getElementById("inicio");
+
+if (whatsappFloat && heroSection && "IntersectionObserver" in window) {
+  const heroObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        whatsappFloat.classList.toggle("is-visible", !entry.isIntersecting);
+      });
+    },
+    { threshold: 0 }
+  );
+  heroObserver.observe(heroSection);
+} else if (whatsappFloat) {
+  whatsappFloat.classList.add("is-visible");
+}
+
+// ============================================================
+// FAQ accordion
+// ============================================================
+const faqItems = document.querySelectorAll(".faq-item");
+
+faqItems.forEach((item) => {
+  const trigger = item.querySelector(".faq-item__trigger");
+  if (!trigger) return;
+
+  trigger.addEventListener("click", () => {
+    const wasOpen = item.classList.contains("is-open");
+
+    faqItems.forEach((other) => {
+      other.classList.remove("is-open");
+      other.querySelector(".faq-item__trigger").setAttribute("aria-expanded", "false");
+    });
+
+    if (!wasOpen) {
+      item.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    }
+  });
+});
+
+// ============================================================
+// Contact form -> Email handoff
 // ============================================================
 const form = document.getElementById("contact-form");
 const formNote = document.getElementById("form-note");
@@ -80,15 +125,16 @@ if (form) {
     const type = form.type.value;
     const message = form.message.value.trim();
 
-    const text =
-      `Hola, soy ${name}.\n` +
+    const subject = `Nueva solicitud de pieza — ${type}`;
+    const body =
+      `Nombre: ${name}\n` +
       `Contacto: ${contact}\n` +
       `Tipo de pieza: ${type}\n\n` +
       `${message}`;
 
-    const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank", "noopener");
+    const url = `mailto:${CONFIG.contactEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = url;
 
-    formNote.textContent = "Se abrió WhatsApp con tu mensaje listo para enviar.";
+    formNote.textContent = "Se abrió tu programa de correo con el mensaje listo para enviar.";
   });
 }
